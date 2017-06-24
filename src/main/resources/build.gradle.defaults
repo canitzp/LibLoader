@@ -1,0 +1,21 @@
+group 'com.yourname.examplemod'
+version '1.0.0'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven {
+            url 'https://libraries.minecraft.net/'
+    }
+}
+
+dependencies {
+    compile fileTree(dir:'cache/libraries', include: '*.jar')
+    compile fileTree(dir: 'cache', include: '*.jar')
+    compile 'net.minecraft:launchwrapper:1.12'
+    compile 'org.ow2.asm:asm-debug-all:5.2'
+}
