@@ -1,7 +1,9 @@
-package de.canitzp.libloader;
+package de.canitzp.libloader.threads;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import de.canitzp.libloader.LibLoader;
+import de.canitzp.libloader.VersionFrame;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -17,10 +19,13 @@ import java.util.zip.ZipFile;
  * @author canitzp
  */
 public class DownloadThread extends Thread {
+
     public DownloadThread() {
+        this.setDaemon(true);
     }
 
     public void run() {
+        LibLoader.mainFrame.chooseVersionBtn.setEnabled(false);
         try {
             String mcVersion = VersionFrame.choosenVersion;
             File cacheDir = new File(getExecutionPath(), "cache");
@@ -32,6 +37,7 @@ public class DownloadThread extends Thread {
             log("Minecraft version: " + mcVersion);
             log("Destination: " + cacheDir.getAbsolutePath());
             cacheDir.mkdirs();
+            System.out.println("sdgdsgdfg");
             log("> Downloading Minecraft...");
             if (!client.exists()) {
                 log(">> Download Client");
@@ -122,8 +128,7 @@ public class DownloadThread extends Thread {
             var15.printStackTrace();
         }
 
-        LibLoader.close.setEnabled(true);
-        LibLoader.versions.setEnabled(true);
+        LibLoader.mainFrame.chooseVersionBtn.setEnabled(true);
     }
 
     private void downloadFile(String urlString, File file) {
@@ -195,7 +200,6 @@ public class DownloadThread extends Thread {
 
     public static void log(String msg) {
         System.out.println(msg);
-        LibLoader.area.setCaretPosition(LibLoader.area.getDocument().getLength());
     }
 
     public static File getExecutionPath() throws UnsupportedEncodingException {
