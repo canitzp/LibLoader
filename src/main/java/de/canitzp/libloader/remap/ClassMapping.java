@@ -71,4 +71,9 @@ public class ClassMapping {
     public ClassReader getClassReader() {
         return classReader;
     }
+
+    @Override
+    public String toString() {
+        return String.format("ClassMapping{obfName=%s, mappedName=%s, hasClassReader=%b, javaDoc=%s, methods=%s, fields=%s}", this.obfName, this.mappedName, this.classReader != null, this.javaDoc, this.methods, this.fields);
+    }
 }

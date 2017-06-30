@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * @author canitzp
@@ -23,6 +25,7 @@ public class LibLoader {
     public static final String MEDDLEAPI_VERSION = "1.0.7";
     public static final String MINECRAFT_VERSIONS_MAVEN = "http://s3.amazonaws.com/Minecraft.Download/versions/";
     public static final String FYBEROPTICS_MAVEN = "http://fybertech.net/maven/net/fybertech/";
+    private static final Logger LOG = Logger.getLogger("LibLoader", null);
     public static PrintStream writer = new PrintStream(new OutputStream() {
         public void write(int b) throws IOException {
             mainFrame.logAreaDownload.append(String.valueOf((char)b));
@@ -41,6 +44,10 @@ public class LibLoader {
         System.setErr(writer);
 
         mainFrame = new MainFrame();
+    }
+
+    public static void msg(String msg){
+        LOG.info(msg);
     }
 
     public static class JSONDataLibClassifier {
