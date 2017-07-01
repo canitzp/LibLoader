@@ -1,15 +1,26 @@
 package de.canitzp.libloader;
 
+import de.canitzp.libloader.remap.ChildMapping;
 import de.canitzp.libloader.remap.ClassMapping;
+import de.canitzp.libloader.remap.Mappings;
 import de.canitzp.libloader.remap.MappingsParser;
+import de.canitzp.libloader.threads.ApplyMappingsThread;
 import de.canitzp.libloader.threads.DownloadThread;
+import de.canitzp.libloader.threads.GenMappingsThread;
+import de.canitzp.libloader.threads.GenObfMappingsThread;
 import org.apache.commons.lang3.tuple.Pair;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.DefaultEditorKit;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -32,6 +43,7 @@ public class MainFrame extends JFrame{
     public JButton generateObfuscatedMappingsFileBtn = new JButton("Generate obfuscated mappings file");
     public JButton generateMappedMappingsFileBtn = new JButton("Generate mapped mappings file");
     public JButton applyMappingsToJarBtn = new JButton("Apply mappings file to Minecraft jar");
+    public JProgressBar mappingsProgress = new JProgressBar();
 
     public MainFrame(){
         super("LibLoader " + LibLoader.VERSION);
@@ -55,11 +67,29 @@ public class MainFrame extends JFrame{
                 logAreaMappings.setCaretPosition(logAreaMappings.getDocument().getLength());
             }
         };
+        MouseAdapter areaPopup = new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    final JPopupMenu menu = new JPopupMenu();
+                    JMenuItem item;
+                    item = new JMenuItem(new DefaultEditorKit.CopyAction());
+                    item.setText("Copy");
+                    item.setEnabled(logAreaDownload.getSelectionStart() != logAreaDownload.getSelectionEnd() || logAreaMappings.getSelectionStart() != logAreaMappings.getSelectionEnd());
+                    menu.add(item);
+                    menu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        };
 
         this.logAreaDownload.setEditable(false);
         this.logAreaDownload.getDocument().addDocumentListener(documentListener);
+        this.logAreaDownload.setFont(LibLoader.font);
+        this.logAreaDownload.addMouseListener(areaPopup);
         this.logAreaMappings.setEditable(false);
         this.logAreaMappings.getDocument().addDocumentListener(documentListener);
+        this.logAreaMappings.setFont(LibLoader.font);
+        this.logAreaMappings.addMouseListener(areaPopup);
         this.chooseJarPath.setEditable(false);
         this.generateObfuscatedMappingsFileBtn.setEnabled(false);
         this.generateMappedMappingsFileBtn.setEnabled(false);
@@ -77,6 +107,7 @@ public class MainFrame extends JFrame{
 
         mappingsPanel.add(mappingsPanelNorth, BorderLayout.NORTH);
         mappingsPanel.add(new JScrollPane(this.logAreaMappings), BorderLayout.CENTER);
+        mappingsPanel.add(this.mappingsProgress, BorderLayout.SOUTH);
 
         this.tabs.addTab("Download", downloadPanel);
         this.tabs.addTab("Mapping", mappingsPanel);
@@ -88,7 +119,7 @@ public class MainFrame extends JFrame{
         this.setVisible(true);
 
         this.chooseVersionBtn.addActionListener(e -> {
-            LibLoader.msg("Version button pressed");
+            LibLog.infoSilence("Version button pressed");
             try {
                 new VersionFrame(this);
             } catch (Exception e1) {
@@ -96,7 +127,7 @@ public class MainFrame extends JFrame{
             }
         });
         this.chooseJarBtn.addActionListener(e -> {
-            LibLoader.msg("Choose jar button pressed");
+            LibLog.infoSilence("Choose jar button pressed");
             try {
                 JFileChooser chooser = new JFileChooser(DownloadThread.getExecutionPath());
                 chooser.setDialogTitle("Choose Minecraft Jar");
@@ -113,46 +144,14 @@ public class MainFrame extends JFrame{
                 e1.printStackTrace();
             }
         });
-        this.applyMappingsToJarBtn.addActionListener(e -> {
-            LibLoader.msg("Apply mappings to jar button pressed");
-            JFileChooser chooser = new JFileChooser(MainFrame.this.chooseJarPath.getText());
-            chooser.setDialogTitle("Choose Mappings File");
-            chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            chooser.setFileFilter(new FileNameExtensionFilter("Minecraft Mappings-File (.mappings)", "mappings"));
-            if(chooser.showOpenDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION){
-                LibLoader.msg("Reading mappings file");
-                try {
-                    for(ClassMapping mapping : new MappingsParser(chooser.getSelectedFile()).read()){
-                        System.out.println(mapping);
-                    }
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        });
-        this.generateObfuscatedMappingsFileBtn.addActionListener(e -> {
-            LibLoader.msg("Generate obfuscated mappings file button pressed");
-            try {
-                MainFrame.this.generateObfuscatedMappingsFileBtn.setEnabled(false);
-                MainFrame.this.generateMappedMappingsFileBtn.setEnabled(false);
-                MainFrame.this.applyMappingsToJarBtn.setEnabled(false);
-                LibLoader.msg("Open and analyzing jar file");
-                File jarFile = new File(this.chooseJarPath.getText());
-                Pair<List<ClassMapping>, Map<String, byte[]>> obfJar = Util.analyzeJarFile(jarFile, Util.readJarFile(jarFile));
-                new MappingsParser(new File(".", "obfuscated.mappings")).write(obfJar.getKey());
-                MainFrame.this.generateObfuscatedMappingsFileBtn.setEnabled(true);
-                MainFrame.this.generateMappedMappingsFileBtn.setEnabled(true);
-                MainFrame.this.applyMappingsToJarBtn.setEnabled(true);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        });
+        this.applyMappingsToJarBtn.addActionListener(e -> LibLoader.startThread(new ApplyMappingsThread()));
+        this.generateObfuscatedMappingsFileBtn.addActionListener(e -> LibLoader.startThread(new GenObfMappingsThread()));
+        this.generateMappedMappingsFileBtn.addActionListener(e -> LibLoader.startThread(new GenMappingsThread()));
     }
 
     public void clearLog(){
-        this.logAreaDownload.setText(null);
-        this.logAreaMappings.setText(null);
+        //this.logAreaDownload.setText(null);
+        //this.logAreaMappings.setText(null);
     }
 
     public static JComponent merge(JComponent first, JComponent second, boolean leftAndRight){

@@ -37,7 +37,6 @@ public class DownloadThread extends Thread {
             log("Minecraft version: " + mcVersion);
             log("Destination: " + cacheDir.getAbsolutePath());
             cacheDir.mkdirs();
-            System.out.println("sdgdsgdfg");
             log("> Downloading Minecraft...");
             if (!client.exists()) {
                 log(">> Download Client");

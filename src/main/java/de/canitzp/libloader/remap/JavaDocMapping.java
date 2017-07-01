@@ -18,8 +18,12 @@ public class JavaDocMapping {
         return this;
     }
 
-    public List<String> getRawLines() {
-        return lines;
+    public String getRawLines() {
+        String raw = "";
+        for(String s : this.lines){
+            raw += s + LINE_SPLIT_PATTERN.pattern();
+        }
+        return raw;
     }
 
     public List<String> finish(){

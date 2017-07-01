@@ -1,6 +1,7 @@
 package de.canitzp.libloader.remap;
 
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -70,6 +71,15 @@ public class ClassMapping {
 
     public ClassReader getClassReader() {
         return classReader;
+    }
+
+    public ClassNode createClassNode(){
+        if(this.getClassReader() != null){
+            ClassNode cn = new ClassNode();
+            this.getClassReader().accept(cn, 0);
+            return cn;
+        }
+        return null;
     }
 
     @Override

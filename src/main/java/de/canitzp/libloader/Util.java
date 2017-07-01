@@ -1,13 +1,18 @@
 package de.canitzp.libloader;
 
 import de.canitzp.libloader.remap.ClassMapping;
+import de.canitzp.libloader.remap.mappings.MappingsBase;
+import de.canitzp.libloader.remap.mappings.MappingsDependsOn;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.objectweb.asm.ClassReader;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 

@@ -10,24 +10,24 @@ public class ChildMapping<T> {
     private String obfuscatedName, obfuscatedDesc, mappedName, mappedDesc;
     private T node;
 
-    public ChildMapping setObfName(String obfName, String obfDesc){
+    public ChildMapping<T> setObfName(String obfName, String obfDesc){
         this.obfuscatedName = obfName;
         this.obfuscatedDesc = obfDesc;
         return this;
     }
 
-    public ChildMapping setMapped(String mappedName, String mappedDesc){
+    public ChildMapping<T> setMapped(String mappedName, String mappedDesc){
         this.mappedName = mappedName;
         this.mappedDesc = mappedDesc;
         return this;
     }
 
-    public ChildMapping setJavaDoc(JavaDocMapping javaDoc){
+    public ChildMapping<T> setJavaDoc(JavaDocMapping javaDoc){
         this.javaDoc = javaDoc;
         return this;
     }
 
-    public ChildMapping setNode(T node){
+    public ChildMapping<T> setNode(T node){
         this.node = node;
         return this;
     }
