@@ -1,15 +1,11 @@
 package de.canitzp.libloader.remap;
 
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
 import de.canitzp.libloader.LibLoader;
 import de.canitzp.libloader.LibLog;
+import de.canitzp.libloader.Names;
 import de.canitzp.libloader.remap.mappings.MappingsBase;
 import de.canitzp.libloader.remap.mappings.MappingsDependsOn;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -59,8 +55,7 @@ public class Mappings {
         }
     }
 
-    @Nullable
-    public static ClassMapping getClassMappingFromObfName(@NotNull String obfName){
+    public static ClassMapping getClassMappingFromObfName(String obfName){
         for(ClassMapping classMapping : classMappings){
             if(classMapping.getObfName().equals(obfName)){
                 return classMapping;
@@ -69,8 +64,11 @@ public class Mappings {
         return null;
     }
 
-    @Nullable
-    public static ClassMapping getClassMappingFromMappedName(@NotNull String mappedName){
+    public static ClassMapping getClassMappingFromMappedName(Names name){
+            return getClassMappingFromMappedName(name.getClassDefName());
+    }
+
+    public static ClassMapping getClassMappingFromMappedName(String mappedName){
         for(ClassMapping classMapping : classMappings){
             if(classMapping.getMappedName() != null && classMapping.getMappedName().equals(mappedName)){
                 return classMapping;
@@ -79,8 +77,7 @@ public class Mappings {
         return null;
     }
 
-    @NotNull
-    public static List<ChildMapping<MethodNode>> getMethodFromObf(@Nullable ClassMapping classMapping, @Nullable String obfName, @Nullable String obfDesc){
+    public static List<ChildMapping<MethodNode>> getMethodFromObf(ClassMapping classMapping, String obfName, String obfDesc){
         if(classMapping != null){
             List<ChildMapping<MethodNode>> ret = new ArrayList<>();
             for(ChildMapping<MethodNode> method : classMapping.getMethods()){
@@ -97,12 +94,11 @@ public class Mappings {
         return Collections.emptyList();
     }
 
-    @Nullable
-    public static ChildMapping<MethodNode> getMethodFromMapped(@Nullable ClassMapping classMapping, @NotNull String mappedName, @NotNull String mappedDesc){
+    public static ChildMapping<MethodNode> getMethodFromMapped(ClassMapping classMapping, String mappedName, String mappedDesc){
         if(classMapping != null){
             List<ChildMapping<MethodNode>> ret = new ArrayList<>();
             for(ChildMapping<MethodNode> method : classMapping.getMethods()){
-                if(method.getMappedName().equals(mappedName) && method.getMappedDesc().equals(mappedDesc)){
+                if(mappedName.equals(method.getMappedName()) && mappedDesc.equals(method.getMappedDesc())){
                     return method;
                 }
             }
@@ -110,7 +106,7 @@ public class Mappings {
         return null;
     }
 
-    public static boolean addClassMapping(@NotNull String obfName, @NotNull String mappedName){
+    public static boolean addClassMapping(String obfName, String mappedName){
         ClassMapping classMapping = getClassMappingFromObfName(obfName);
         if(classMapping != null){
             if(classMapping.getMappedName() != null){
@@ -122,7 +118,7 @@ public class Mappings {
         return false;
     }
 
-    public static boolean addMethodMapping(@NotNull ClassMapping classMapping, @NotNull ChildMapping<MethodNode> method, @NotNull String mappedName, @NotNull String mappedDesc){
+    public static boolean addMethodMapping(ClassMapping classMapping, ChildMapping<MethodNode> method, String mappedName, String mappedDesc){
         for(ChildMapping<MethodNode> method1 : classMapping.getMethods()){
             if(method1 == method){
                 method1.setMapped(mappedName, mappedDesc);
@@ -132,7 +128,17 @@ public class Mappings {
         return false;
     }
 
-    public static boolean addMappingsWithMethodInsnNode(@NotNull MethodInsnNode node, @NotNull String mappedClassName, @NotNull String mappedMethodName, @NotNull String mappedMethodDesc){
+    public static boolean addFieldMapping(ClassMapping classMapping, ChildMapping<FieldNode> field, String mappedName, String mappedDesc){
+        for(ChildMapping<FieldNode> field1 : classMapping.getFields()){
+            if(field1 == field){
+                field1.setMapped(mappedName, mappedDesc);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean addMappingsWithMethodInsnNode(MethodInsnNode node, String mappedClassName, String mappedMethodName, String mappedMethodDesc){
         if(addClassMapping(node.owner, mappedClassName)){
             ClassMapping classMapping = getClassMappingFromMappedName(mappedClassName);
             List<ChildMapping<MethodNode>> methods = getMethodFromObf(classMapping, node.name, node.desc);
@@ -161,6 +167,47 @@ public class Mappings {
             }
         }
         return null;
+    }
+
+    public static List<LdcInsnNode> getLdcNodes(InsnList list){
+        List<LdcInsnNode> ret = new ArrayList<>();
+       for(AbstractInsnNode node : list.toArray()){
+           if(node instanceof LdcInsnNode){
+               ret.add((LdcInsnNode) node);
+           }
+       }
+       return ret;
+    }
+
+    public static List<String> getStrings(InsnList list){
+        List<String> ret = new ArrayList<>();
+        for(LdcInsnNode node : getLdcNodes(list)){
+            if(node.cst instanceof String){
+                ret.add((String) node.cst);
+            }
+        }
+        return ret;
+    }
+
+    public static List<ChildMapping<MethodNode>> getMethodByStrings(ClassMapping cm, String... ss){
+        List<ChildMapping<MethodNode>> ret = new ArrayList<>();
+        for(ChildMapping<MethodNode> method : cm.getMethods()){
+            List<String> stringInMethod = getStrings(method.getNode().instructions);
+            boolean errorFlag = false;
+            for(String s : ss){
+                if(!stringInMethod.contains(s)){
+                    if(errorFlag){
+                        break;
+                    } else {
+                        errorFlag = true;
+                    }
+                }
+            }
+            if(!errorFlag){
+                ret.add(method);
+            }
+        }
+        return ret;
     }
 
 }

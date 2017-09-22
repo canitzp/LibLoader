@@ -1,6 +1,7 @@
 package de.canitzp.libloader.remap;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -34,14 +35,22 @@ public class MappingsParser {
                 currentMapping = readClassMappingFromLine(line);
             } else if(currentMapping != null){
                 if(line.startsWith(":M ")){
-                    currentMapping.addMethod(currentChild = this.readChildMappingFromLine(line.substring(4)));
+                    currentMapping.addMethod(currentChild = this.readChildMappingFromLine(line.substring(3)));
                 } else if(line.startsWith(":F ")){
-                    currentMapping.addField(currentChild = this.readChildMappingFromLine(line.substring(4)));
+                    currentMapping.addField(currentChild = this.readChildMappingFromLine(line.substring(3)));
                 } else if(line.startsWith(":JD ")){
                     if(currentChild != null){
-                        currentChild.setJavaDoc(readJavaDocMappingFromLine(line.substring(5)));
+                        currentChild.setJavaDoc(readJavaDocMappingFromLine(line.substring(4)));
                     } else {
-                        currentMapping.setJavaDoc(readJavaDocMappingFromLine(line.substring(5)));
+                        currentMapping.setJavaDoc(readJavaDocMappingFromLine(line.substring(4)));
+                    }
+                } else if(line.startsWith(":AT ")){
+                    if(currentChild != null){
+                        currentChild.setAccess(this.readAccessTransformerFromLine(line.substring(4)));
+                    }
+                } else if(line.startsWith(":MP ")){
+                    if(currentChild != null){
+                        currentChild.setParamNames(this.readParamNamesFromFile(line.substring(4)));
                     }
                 }
             } else {
@@ -64,11 +73,20 @@ public class MappingsParser {
                 if(method.getJavaDoc() != null){
                     lines.add(":JD " + method.getJavaDoc().getRawLines());
                 }
+                if(method.getAccess() > -1){
+                    lines.add(":AT " + String.valueOf(method.getAccess()));
+                }
+                if(method.getParamNames() != null){
+                    lines.add(":MP " + String.join(",", method.getParamNames()));
+                }
             }
             for(ChildMapping<FieldNode> field : mapping.getFields()){
                 lines.add(":F " + field.getObfuscatedName() + "#" + field.getObfuscatedDesc() + "#" + emptyIfNull(field.getMappedName()) + "#" + emptyIfNull(field.getMappedDesc()));
                 if(field.getJavaDoc() != null){
                     lines.add(":JD " + field.getJavaDoc().getRawLines());
+                }
+                if(field.getAccess() > -1){
+                    lines.add(":AT " + String.valueOf(field.getAccess()));
                 }
             }
         }
@@ -105,6 +123,21 @@ public class MappingsParser {
             javaDoc.addLine(s);
         }
         return javaDoc;
+    }
+
+    private int readAccessTransformerFromLine(String line){
+        if(NumberUtils.isCreatable(line.replace(" ", ""))){
+            return Integer.parseInt(line.replace(" ", ""));
+        }
+        return -1;
+    }
+
+    private String[] readParamNamesFromFile(String line){
+        String[] split = line.split(",");
+        if(split.length > 0){
+            return split;
+        }
+        return null;
     }
 
 }

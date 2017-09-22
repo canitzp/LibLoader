@@ -1,5 +1,6 @@
 package de.canitzp.libloader.remap;
 
+import com.sun.org.apache.xerces.internal.dom.ChildNode;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -78,6 +79,34 @@ public class ClassMapping {
             ClassNode cn = new ClassNode();
             this.getClassReader().accept(cn, 0);
             return cn;
+        }
+        return null;
+    }
+
+    @Deprecated
+    public ChildMapping<MethodNode> getMethodByName(String name){
+        for(ChildMapping<MethodNode> method : this.getMethods()){
+            if(name.equals(method.getObfuscatedName()) || name.equals(method.getMappedName())){
+                return method;
+            }
+        }
+        return null;
+    }
+
+    public ChildMapping<FieldNode> getFieldByName(String name){
+        for(ChildMapping<FieldNode> field : this.getFields()){
+            if(name.equals(field.getObfuscatedName()) || name.equals(field.getMappedName())){
+                return field;
+            }
+        }
+        return null;
+    }
+
+    public ChildMapping<MethodNode> getMethodByNameAndDesc(String name, String desc){
+        for(ChildMapping<MethodNode> method : this.getMethods()){
+            if((name.equals(method.getObfuscatedName()) || name.equals(method.getMappedName())) && (desc.equals(method.getObfuscatedDesc()) || desc.equals(method.getMappedDesc()))){
+                return method;
+            }
         }
         return null;
     }
