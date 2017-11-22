@@ -2,19 +2,16 @@ package de.canitzp.libloader.threads;
 
 import de.canitzp.libloader.LibLoader;
 import de.canitzp.libloader.LibLog;
-import de.canitzp.libloader.MainFrame;
 import de.canitzp.libloader.Util;
+import de.canitzp.libloader.launch.NameTransformer;
 import de.canitzp.libloader.remap.*;
 import org.apache.commons.lang3.tuple.Pair;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -54,13 +51,10 @@ public class ApplyMappingsThread extends Thread {
                             mapping.setClassReader(oldMapping.getClassReader());
                             break;
                         }
-                        if(mapping.getMappedName() == null){
-                            mapping.setMappedName("net/minecraft/unknown/class_" + mapping.getObfName());
-                        }
                     }
                 }
                 for(ClassMapping mapping : mappings){
-                    ClassNode cn = mapping.createClassNode();
+                    ClassNode cn = mapping.getClassNode();
                     for(MethodNode method : cn.methods){
                         mapping.getMethodByNameAndDesc(method.name, method.desc).setNode(method);
                     }
@@ -72,17 +66,14 @@ public class ApplyMappingsThread extends Thread {
                 bar.setMaximum(mappings.size() - 1);
                 bar.setStringPainted(true);
                 CustomRemapper remapper = new CustomRemapper(mappings);
+                NameTransformer.remapper = remapper;
+                NameTransformer transformer = new NameTransformer();
                 for(ClassMapping mapping : mappings){
-                    bar.setString("Remap " + (mapping.getMappedName() != null ? mapping.getMappedName() : mapping.getObfName()));
+                    String name = mapping.getMappedName() != null ? mapping.getMappedName() : mapping.getObfName();
+                    bar.setString("Remap " + name);
                     bar.setValue(bar.getValue() + 1);
-                    ClassWriter cw = new ClassWriter(0);
-                    ClassNode cn = new ClassNode();
-                    CustomClassRemapper ccr = new CustomClassRemapper(cn, remapper);
-                    mapping.getClassReader().accept(ccr, ClassReader.EXPAND_FRAMES);
-                    ccr.finish(cn);
-                    cn.accept(cw);
-                    jos.putNextEntry(new ZipEntry((mapping.getMappedName() != null ? mapping.getMappedName() : mapping.getObfName()) + ".class"));
-                    jos.write(cw.toByteArray());
+                    jos.putNextEntry(new ZipEntry(name + ".class"));
+                    jos.write(transformer.transform(mapping.getObfName(), name, mapping.getClassReader().b));
                 }
                 LibLog.infoSilence("Process non class files");
                 bar.setMaximum(pair.getValue().size() - 1);

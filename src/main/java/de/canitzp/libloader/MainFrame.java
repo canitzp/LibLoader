@@ -4,10 +4,7 @@ import de.canitzp.libloader.remap.ChildMapping;
 import de.canitzp.libloader.remap.ClassMapping;
 import de.canitzp.libloader.remap.Mappings;
 import de.canitzp.libloader.remap.MappingsParser;
-import de.canitzp.libloader.threads.ApplyMappingsThread;
-import de.canitzp.libloader.threads.DownloadThread;
-import de.canitzp.libloader.threads.GenMappingsThread;
-import de.canitzp.libloader.threads.GenObfMappingsThread;
+import de.canitzp.libloader.threads.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -43,6 +40,7 @@ public class MainFrame extends JFrame{
     public JButton generateObfuscatedMappingsFileBtn = new JButton("Generate obfuscated mappings file");
     public JButton generateMappedMappingsFileBtn = new JButton("Generate mapped mappings file");
     public JButton applyMappingsToJarBtn = new JButton("Apply mappings file to Minecraft jar");
+    public JButton comparableVersion = new JButton("Create comparable file");
     public JProgressBar mappingsProgress = new JProgressBar();
 
     public MainFrame(){
@@ -94,6 +92,7 @@ public class MainFrame extends JFrame{
         this.generateObfuscatedMappingsFileBtn.setEnabled(false);
         this.generateMappedMappingsFileBtn.setEnabled(false);
         this.applyMappingsToJarBtn.setEnabled(false);
+        this.comparableVersion.setEnabled(false);
 
         JPanel downloadPanel = new JPanel(new BorderLayout());
         downloadPanel.add(this.chooseVersionBtn, BorderLayout.NORTH);
@@ -103,7 +102,7 @@ public class MainFrame extends JFrame{
         JPanel mappingsPanelNorth = new JPanel(new BorderLayout());
         mappingsPanelNorth.add(merge(this.chooseJarPath, this.chooseJarBtn, true), BorderLayout.NORTH);
         mappingsPanelNorth.add(mergeGrid(this.generateObfuscatedMappingsFileBtn, this.generateMappedMappingsFileBtn), BorderLayout.CENTER);
-        mappingsPanelNorth.add(this.applyMappingsToJarBtn, BorderLayout.SOUTH);
+        mappingsPanelNorth.add(mergeGrid(this.applyMappingsToJarBtn, this.comparableVersion), BorderLayout.SOUTH);
 
         mappingsPanel.add(mappingsPanelNorth, BorderLayout.NORTH);
         mappingsPanel.add(new JScrollPane(this.logAreaMappings), BorderLayout.CENTER);
@@ -147,6 +146,7 @@ public class MainFrame extends JFrame{
         this.applyMappingsToJarBtn.addActionListener(e -> LibLoader.startThread(new ApplyMappingsThread()));
         this.generateObfuscatedMappingsFileBtn.addActionListener(e -> LibLoader.startThread(new GenObfMappingsThread()));
         this.generateMappedMappingsFileBtn.addActionListener(e -> LibLoader.startThread(new GenMappingsThread()));
+        this.comparableVersion.addActionListener(e -> LibLoader.startThread(new CreateComparableThread()));
     }
 
     public void clearLog(){

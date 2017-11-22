@@ -1,5 +1,6 @@
 package de.canitzp.libloader.launch;
 
+import de.canitzp.libloader.remap.ChildMapping;
 import de.canitzp.libloader.remap.ClassMapping;
 import de.canitzp.libloader.remap.CustomClassRemapper;
 import de.canitzp.libloader.remap.CustomRemapper;
@@ -12,6 +13,7 @@ import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,14 +50,40 @@ public class NameTransformer implements IClassNameTransformer, IClassTransformer
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if(isMinecraftClass(name) || isMinecraftClass(transformedName)){
-            //ClassNode cn = new ClassNode();
-            ClassWriter cw = new ClassWriter(0);
-            ClassReader cr = new ClassReader(basicClass);
-            CustomClassRemapper ccr = new CustomClassRemapper(cw, remapper);
-            cr.accept(ccr, ClassReader.EXPAND_FRAMES);
+            ClassMapping mapping = remapper.getClassMappingForName(name);
+            if(mapping != null){
+                for(ITransformer transformer : Tweaker.TRANSFORMER.getOrDefault(transformedName.replace(".", "/"), new ArrayList<>())){
+                    mapping.addClassTransformer(transformer);
+                }
+                ClassReader cr = new ClassReader(basicClass);
+                ClassNode cn = new ClassNode();
+                CustomClassRemapper ccr = new CustomClassRemapper(cn, remapper);
+                cr.accept(ccr, ClassReader.EXPAND_FRAMES);
+                mapping.setClassNode(cn).setClassReader(cr);
+                return writeDebug(mapping.getRawData(), transformedName);
+            } else System.out.println(name + "   " + transformedName);
+
+
+            /*
+
+
+
+            ClassMapping mapping = new ClassMapping().setObfName(name).setMappedName(transformedName).setClassReader(cr).setClassNode(cn);
+            for(MethodNode mn : cn.methods){
+                mapping.addMethod(new ChildMapping<>(mn));
+            }
+            for(FieldNode fn: cn.fields){
+                mapping.addField(new ChildMapping<>(fn));
+            }
+            for(ITransformer transformer : Tweaker.TRANSFORMER.getOrDefault(transformedName, new ArrayList<>())){
+                mapping.addClassTransformer(transformer);
+            }
+            remapper.mappings.add(mapping);
+            return writeDebug(mapping.getRawData(), transformedName);
+            */
+
             //ccr.finish(cn);
             //cn.accept(cw);
-            return writeDebug(cw.toByteArray(), transformedName);
         }
         return basicClass;
     }

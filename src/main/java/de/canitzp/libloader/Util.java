@@ -1,11 +1,15 @@
 package de.canitzp.libloader;
 
 import de.canitzp.libloader.remap.ClassMapping;
+import de.canitzp.libloader.remap.MappingsParser;
 import de.canitzp.libloader.remap.mappings.MappingsBase;
 import de.canitzp.libloader.remap.mappings.MappingsDependsOn;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +45,26 @@ public class Util {
             }
         }
         return Pair.of(classMappings, nonClassResources);
+    }
+
+    public static List<ClassMapping> readCorrectFromFile(File file){
+        try {
+            List<ClassMapping> mappings = new MappingsParser(file).read();
+            for(ClassMapping mapping : mappings){
+                ClassNode cn = mapping.getClassNode();
+                for(MethodNode method : cn.methods){
+                    mapping.getMethodByNameAndDesc(method.name, method.desc).setNode(method);
+                }
+                for(FieldNode field : cn.fields){
+                    mapping.getFieldByName(field.name).setNode(field);
+                }
+            }
+            System.out.println(mappings);
+            return mappings;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Collections.emptyList();
     }
 
 }

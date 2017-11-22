@@ -30,6 +30,7 @@ dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.5'
     compile group: 'org.ow2.asm', name: 'asm-debug-all', version: '5.0.3'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
+    compile group: 'org.javassist', name: 'javassist', version: "3.22.0-CR2"
     compile fileTree("./reference")
 }
 

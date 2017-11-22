@@ -5,14 +5,12 @@ import de.canitzp.libloader.LibLog;
 import de.canitzp.libloader.Names;
 import de.canitzp.libloader.remap.mappings.MappingsBase;
 import de.canitzp.libloader.remap.mappings.MappingsDependsOn;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -55,6 +53,10 @@ public class Mappings {
         }
     }
 
+    public static void throwRemappingError(String message){
+        LibLog.msg(Level.ALL, message, true);
+    }
+
     public static ClassMapping getClassMappingFromObfName(String obfName){
         for(ClassMapping classMapping : classMappings){
             if(classMapping.getObfName().equals(obfName)){
@@ -75,6 +77,29 @@ public class Mappings {
             }
         }
         return null;
+    }
+
+    public static ClassMapping getClassMappingFromName(String name){
+        for(ClassMapping classMapping : classMappings){
+            if(name.equals(classMapping.getObfName()) || name.equals(classMapping.getMappedName())){
+                return classMapping;
+            }
+        }
+        return null;
+    }
+
+    public static List<ClassMapping> findClassWithString(String... ss){
+        List<ClassMapping> possibleClasses = new ArrayList<>();
+        for(ClassMapping classMapping : classMappings){
+            List<String> foundInClass = new ArrayList<>();
+            for(ChildMapping<MethodNode> method : classMapping.getMethods()){
+                foundInClass.addAll(getStrings(method.getNode().instructions));
+            }
+            if(foundInClass.containsAll(Arrays.asList(ss))){
+                possibleClasses.add(classMapping);
+            }
+        }
+        return possibleClasses;
     }
 
     public static List<ChildMapping<MethodNode>> getMethodFromObf(ClassMapping classMapping, String obfName, String obfDesc){
@@ -208,6 +233,18 @@ public class Mappings {
             }
         }
         return ret;
+    }
+
+    public static MethodInsnNode findInvokeNode(InsnList list, String owner, String name, String desc){
+        for(AbstractInsnNode node : list.toArray()){
+            if(node.getOpcode() == Opcodes.INVOKEVIRTUAL){
+                MethodInsnNode insnNode = (MethodInsnNode) node;
+                if(owner.equals(insnNode.owner) && name.equals(insnNode.name) && desc.equals(insnNode.desc)){
+                    return insnNode;
+                }
+            }
+        }
+        return null;
     }
 
 }

@@ -1,9 +1,7 @@
 package de.canitzp.libloader.remap;
 
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
+import de.canitzp.libloader.modloader.Mod;
+import org.objectweb.asm.*;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.tree.ClassNode;
@@ -26,11 +24,17 @@ public class CustomClassRemapper extends RemappingClassAdapter {
 
     @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        if(!Modifier.isPublic(access) && !Modifier.isProtected(access) && !Modifier.isPrivate(access)){
+            access |= Opcodes.ACC_PUBLIC;
+        }
         return super.visitField(this.remapper.mapFieldAccess(access, className, name, desc), name, desc, signature, value);
     }
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        if(!Modifier.isPublic(access) && !Modifier.isProtected(access) && !Modifier.isPrivate(access)){
+            access |= Opcodes.ACC_PUBLIC;
+        }
         return super.visitMethod(this.remapper.mapMethodAccess(access, className, name, desc), name, desc, signature, exceptions);
     }
 

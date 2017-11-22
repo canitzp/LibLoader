@@ -1,6 +1,5 @@
 package de.canitzp.libloader.remap.mappings;
 
-import de.canitzp.libloader.Names;
 import de.canitzp.libloader.remap.ChildMapping;
 import de.canitzp.libloader.remap.ClassMapping;
 import de.canitzp.libloader.remap.JavaDocMapping;
@@ -80,7 +79,7 @@ public class ClientMappings extends MappingsBase {
                     Mappings.addFieldMapping(minecraft, minecraft.getFieldByName(fieldNode.name), "usageSnooper", SNOOPER.getDescName());
                 }
             }
-            for (String iface : minecraft.createClassNode().interfaces) {
+            for (String iface : minecraft.getClassNode().interfaces) {
                 ClassMapping mapping = Mappings.getClassMappingFromObfName(iface);
                 if (mapping != null) {
                     if (mapping.getMethods().size() == 2) {

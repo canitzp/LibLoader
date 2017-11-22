@@ -16,10 +16,17 @@ import java.util.List;
  */
 public class MappingsParser {
 
+    public static final String UNKNOWN_PREFIX = "net/minecraft/class_";
+    public static boolean compareMode = false;
+    public static String nameOverride = null;
+
     private File mappingsFile;
 
     public MappingsParser(File mappingsFile){
         this.mappingsFile = mappingsFile;
+        if(nameOverride != null){
+            this.mappingsFile = new File(this.mappingsFile.getParent(), nameOverride);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -58,6 +65,9 @@ public class MappingsParser {
                 return Collections.emptyList();
             }
         }
+        if(currentMapping != null){
+            mapperList.add(currentMapping);
+        }
         return mapperList;
     }
 
@@ -70,6 +80,7 @@ public class MappingsParser {
             }
             for(ChildMapping<MethodNode> method : mapping.getMethods()){
                 lines.add(":M " + method.getObfuscatedName() + "#" + method.getObfuscatedDesc() + "#" + emptyIfNull(method.getMappedName()) + "#" + emptyIfNull(method.getMappedDesc()));
+                lines.addAll(method.getSpecialProperties(compareMode));
                 if(method.getJavaDoc() != null){
                     lines.add(":JD " + method.getJavaDoc().getRawLines());
                 }
@@ -103,6 +114,8 @@ public class MappingsParser {
         mapping.setObfName(lines[0]);
         if(lines.length == 2){
             mapping.setMappedName(lines[1]);
+        } else {
+            mapping.setMappedName(UNKNOWN_PREFIX + lines[0]);
         }
         return mapping;
     }

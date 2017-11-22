@@ -1,8 +1,16 @@
 package de.canitzp.libloader.remap;
 
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.ParameterNode;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author canitzp
@@ -101,5 +109,24 @@ public class ChildMapping<T> {
             return (m.name.equals(this.getObfuscatedName()) || m.name.equals(this.getMappedName())) && (m.desc.equals(this.getObfuscatedDesc()) || m.desc.equals(this.getMappedDesc()));
         }
         return false;
+    }
+
+    public List<String> getSpecialProperties(boolean isCompareOutput){
+        List<String> lines = new ArrayList<>();
+        if(isCompareOutput){
+            if(getNode() instanceof MethodNode){
+                String line = "";
+                List<ParameterNode> params = ((MethodNode) getNode()).parameters;
+                if(params != null){
+                    line += "parameters=" + Arrays.deepToString(params.toArray());
+                }
+                if(!StringUtils.isEmpty(line)){
+                    lines.add(":MInfo " + line);
+                }
+            } else if(getNode() instanceof FieldNode){
+
+            }
+        }
+        return lines;
     }
 }

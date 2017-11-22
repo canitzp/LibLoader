@@ -27,6 +27,7 @@ public class CustomRemapper extends Remapper {
 
     public ClassMapping getClassMappingForName(String name){
         if(name != null){
+            name = name.replace("/", ".").replace(".", "/");
             if(cachedClassMappings.containsKey(name)){
                 return this.cachedClassMappings.get(name);
             }

@@ -1,16 +1,25 @@
 package de.canitzp.libloader.launch;
 
+import de.canitzp.libloader.launch.transformer.BasicMethodInvoke;
+import de.canitzp.libloader.launch.transformer.InjectLoadingStages;
+import de.canitzp.libloader.launch.transformer.handler.VoidEvents;
 import de.canitzp.libloader.modloader.Loader;
 import de.canitzp.libloader.remap.CustomRemapper;
 import de.canitzp.libloader.remap.MappingsParser;
 import net.minecraft.launchwrapper.ITweaker;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.apache.commons.io.FileUtils;
+import sun.security.util.SecurityConstants;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLClassLoader;
+import java.security.Permission;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author canitzp
@@ -18,10 +27,16 @@ import java.util.List;
 public class Tweaker implements ITweaker {
 
     public static final boolean DEBUG = true;
+    public static final Map<String, List<ITransformer>> TRANSFORMER = new HashMap<>();
 
     private List<String> args;
     private File loaderInternals;
     public static File debugDirectory, modsDir;
+
+    static {
+        addTransformer(new BasicMethodInvoke("net/minecraft/client/Minecraft", "run", "()V", VoidEvents.class.getName().replace(".", "/"), "callMinecraftRun"));
+        //addTransformer(new InjectLoadingStages());
+    }
 
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
@@ -85,5 +100,11 @@ public class Tweaker implements ITweaker {
     @Override
     public String[] getLaunchArguments() {
         return this.args.toArray(new String[0]);
+    }
+
+    public static void addTransformer(ITransformer transformer){
+        List<ITransformer> list = TRANSFORMER.getOrDefault(transformer.getClassName(), new ArrayList<>());
+        list.add(transformer);
+        TRANSFORMER.put(transformer.getClassName(), list);
     }
 }
