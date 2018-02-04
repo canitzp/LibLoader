@@ -1,21 +1,16 @@
 package de.canitzp.libloader.launch;
 
 import de.canitzp.libloader.launch.transformer.BasicMethodInvoke;
-import de.canitzp.libloader.launch.transformer.InjectLoadingStages;
 import de.canitzp.libloader.launch.transformer.handler.VoidEvents;
 import de.canitzp.libloader.modloader.Loader;
 import de.canitzp.libloader.remap.CustomRemapper;
 import de.canitzp.libloader.remap.MappingsParser;
 import net.minecraft.launchwrapper.ITweaker;
-import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.apache.commons.io.FileUtils;
-import sun.security.util.SecurityConstants;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URLClassLoader;
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

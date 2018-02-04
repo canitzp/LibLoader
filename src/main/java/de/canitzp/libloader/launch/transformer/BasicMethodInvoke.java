@@ -1,13 +1,8 @@
 package de.canitzp.libloader.launch.transformer;
 
 import de.canitzp.libloader.launch.ITransformer;
-import de.canitzp.libloader.remap.ChildMapping;
-import de.canitzp.libloader.remap.ClassMapping;
-import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
-
-import java.lang.reflect.Method;
 
 /**
  * @author canitzp

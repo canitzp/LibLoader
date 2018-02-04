@@ -2,13 +2,10 @@ package de.canitzp.libloader.remap;
 
 import de.canitzp.libloader.launch.NameTransformer;
 import org.apache.commons.lang3.tuple.Triple;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

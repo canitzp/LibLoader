@@ -2,21 +2,18 @@ package de.canitzp.libloader;
 
 import de.canitzp.libloader.remap.ClassMapping;
 import de.canitzp.libloader.remap.MappingsParser;
-import de.canitzp.libloader.remap.mappings.MappingsBase;
-import de.canitzp.libloader.remap.mappings.MappingsDependsOn;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -39,6 +36,7 @@ public class Util {
                 ClassMapping classMapping = new ClassMapping();
                 classMapping.setObfName(entry.getName().substring(0, entry.getName().length() - 6));
                 classMapping.setClassReader(new ClassReader(jar.getInputStream(entry)));
+                classMapping.init();
                 classMappings.add(classMapping);
             } else {
                 nonClassResources.put(entry.getName(), IOUtils.toByteArray(jar.getInputStream(entry)));
@@ -66,5 +64,10 @@ public class Util {
         }
         return Collections.emptyList();
     }
+
+    public static int trimAccess(int access){
+        return access & ~Opcodes.ACC_PUBLIC & ~Opcodes.ACC_PRIVATE & ~Opcodes.ACC_PROTECTED;
+    }
+
 
 }

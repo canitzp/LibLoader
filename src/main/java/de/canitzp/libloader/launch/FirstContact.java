@@ -1,6 +1,5 @@
 package de.canitzp.libloader.launch;
 
-import de.canitzp.libloader.remap.CustomRemapper;
 import de.canitzp.libloader.remap.MappingsParser;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;

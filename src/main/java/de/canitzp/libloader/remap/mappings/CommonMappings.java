@@ -17,7 +17,7 @@ public class CommonMappings extends MappingsBase {
     @MappingsDependsOn("processMinecraftServer")
     public static void findSeveralStuff(){
         // Block
-        List<ClassMapping> mappings = Mappings.findClassWithString("air", "stone", "grass", "log2", "Block{", "}");
+        List<ClassMapping> mappings = Mappings.findClassWithString("Block{", "}");
         if(mappings.size() == 1){
             Mappings.addClassMapping(mappings.get(0).getObfName(), "net/minecraft/block/Block");
         } else {

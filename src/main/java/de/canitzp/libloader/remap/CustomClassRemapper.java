@@ -1,14 +1,14 @@
 package de.canitzp.libloader.remap;
 
-import de.canitzp.libloader.modloader.Mod;
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.Remapper;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 
 /**
  * @author canitzp

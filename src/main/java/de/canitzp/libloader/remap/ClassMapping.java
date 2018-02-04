@@ -1,16 +1,16 @@
 package de.canitzp.libloader.remap;
 
 import de.canitzp.libloader.launch.ITransformer;
-import de.canitzp.libloader.launch.NameTransformer;
-import javassist.CtClass;
-import net.minecraft.launchwrapper.Launch;
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author canitzp
@@ -24,6 +24,8 @@ public class ClassMapping {
     private ClassReader classReader;
     private ClassNode cachedClassNode;
     private List<ITransformer> transformer = new ArrayList<>();
+
+    private final Map<FieldNode, Integer> CACHED_USAGES = new ConcurrentHashMap<>();
 
     public ClassMapping setObfName(String obfName){
         this.obfName = obfName;
@@ -192,6 +194,39 @@ public class ClassMapping {
         };
         cn.accept(cw);
         return cw.toByteArray();
+    }
+
+    public int getFieldUsages(FieldNode field){
+        int count = CACHED_USAGES.getOrDefault(field, -1);
+        if(count == -1){
+            count = 0;
+            for(ChildMapping<MethodNode> methods : this.getMethods()){
+                count += Arrays.stream(methods.getNode().instructions.toArray())
+                        .filter(abstractInsnNode -> abstractInsnNode instanceof FieldInsnNode)
+                        .filter(abstractInsnNode -> ((FieldInsnNode) abstractInsnNode).desc.equals(field.desc) && ((FieldInsnNode) abstractInsnNode).name.equals(field.name)).count();
+            }
+            CACHED_USAGES.put(field, count);
+        }
+        return count;
+    }
+
+    public void init(){
+        if(this.getObfName().contains("/")){
+            this.setMappedName(this.getObfName());
+        }
+        ClassNode cn = this.getClassNode();
+        for(MethodNode method : cn.methods){
+            ChildMapping<MethodNode> child = new ChildMapping<MethodNode>().setObfName(method.name, method.desc).setNode(method).setParent(this);
+            if(method.name.equals("<init>")){
+                child.setMapped(method.name, null);
+            } else if(method.name.equals("<clinit>")){
+                child.setMapped(method.name, method.desc);
+            }
+            this.addMethod(child);
+        }
+        for(FieldNode field : cn.fields){
+            this.addField(new ChildMapping<FieldNode>().setObfName(field.name, field.desc).setNode(field).setParent(this));
+        }
     }
 
     @Override

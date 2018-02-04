@@ -146,7 +146,7 @@ public class Mappings {
     public static boolean addMethodMapping(ClassMapping classMapping, ChildMapping<MethodNode> method, String mappedName, String mappedDesc){
         for(ChildMapping<MethodNode> method1 : classMapping.getMethods()){
             if(method1 == method){
-                method1.setMapped(mappedName, mappedDesc);
+                method1.setMapped(mappedName, mappedDesc != null ? mappedDesc : method.getObfuscatedDesc());
                 return true;
             }
         }
@@ -180,6 +180,9 @@ public class Mappings {
         while (lastNode != null){
             for(int code : opcodes){
                 lastNode = lastNode.getNext();
+                if(lastNode == null){
+                    return null;
+                }
                 if(lastNode.getOpcode() != code){
                     flag = true;
                     break;
@@ -229,6 +232,16 @@ public class Mappings {
                 }
             }
             if(!errorFlag){
+                ret.add(method);
+            }
+        }
+        return ret;
+    }
+
+    public static List<ChildMapping<MethodNode>> getMethodsByDesc(ClassMapping cm, String desc){
+        List<ChildMapping<MethodNode>> ret = new ArrayList<>();
+        for(ChildMapping<MethodNode> method : cm.getMethods()){
+            if(desc.equals(method.getObfuscatedDesc()) || desc.equals(method.getMappedDesc())){
                 ret.add(method);
             }
         }

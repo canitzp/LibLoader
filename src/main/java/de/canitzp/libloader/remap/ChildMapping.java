@@ -1,15 +1,16 @@
 package de.canitzp.libloader.remap;
 
 
-import org.apache.commons.lang3.ArrayUtils;
+import de.canitzp.libloader.Util;
 import org.apache.commons.lang3.StringUtils;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.ParameterNode;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,6 +19,7 @@ import java.util.List;
 public class ChildMapping<T> {
 
     private JavaDocMapping javaDoc;
+    private ClassMapping parent;
 
     private String obfuscatedName, obfuscatedDesc, mappedName, mappedDesc;
     private int access = -1; // -1 is default and means that nothing does change
@@ -68,6 +70,11 @@ public class ChildMapping<T> {
         return this;
     }
 
+    public ChildMapping<T> setParent(ClassMapping parent){
+        this.parent = parent;
+        return this;
+    }
+
     public JavaDocMapping getJavaDoc() {
         return javaDoc;
     }
@@ -100,6 +107,10 @@ public class ChildMapping<T> {
         return node;
     }
 
+    public ClassMapping getParent(){
+        return this.parent;
+    }
+
     public boolean isSameAs(T instance){
         if(instance instanceof MethodNode){
             MethodNode m = (MethodNode) instance;
@@ -128,5 +139,34 @@ public class ChildMapping<T> {
             }
         }
         return lines;
+    }
+
+    public float getMatchProbability(int access, String desc, int internalUsages, int outerUsages){
+        float chance = 1.0F;
+        access = Util.trimAccess(access);
+        if(getNode() instanceof FieldNode){
+            FieldNode field = (FieldNode) getNode();
+            int testAccess = Util.trimAccess(field.access);
+            if((testAccess & Opcodes.ACC_STATIC) != (access & Opcodes.ACC_STATIC)){
+                chance -= 0.05F;
+            }
+            if((testAccess & Opcodes.ACC_FINAL) != (access & Opcodes.ACC_FINAL)){
+                chance -= 0.05F;
+            }
+            if(!field.desc.equals(desc)){
+                chance -= 0.2F;
+            }
+            if(internalUsages != -1){
+                chance -= Math.abs(internalUsages - this.getParent().getFieldUsages(field)) / 100.0F;
+            }
+            if(outerUsages != -1 && chance >= 0.95F && !Modifier.isPrivate(field.access)){
+                for(ClassMapping cm : Mappings.classMappings){
+                    if(cm != this.getParent()){
+                        chance -= Math.abs(outerUsages - cm.getFieldUsages(field));
+                    }
+                }
+            }
+        }
+        return chance;
     }
 }

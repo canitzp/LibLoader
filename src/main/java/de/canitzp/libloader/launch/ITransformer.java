@@ -1,7 +1,5 @@
 package de.canitzp.libloader.launch;
 
-import de.canitzp.libloader.remap.ClassMapping;
-import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;

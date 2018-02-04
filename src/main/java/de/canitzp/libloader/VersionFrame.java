@@ -13,7 +13,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 
 /**

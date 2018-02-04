@@ -1,14 +1,6 @@
 package de.canitzp.libloader;
 
-import de.canitzp.libloader.remap.ChildMapping;
-import de.canitzp.libloader.remap.ClassMapping;
-import de.canitzp.libloader.remap.Mappings;
-import de.canitzp.libloader.remap.MappingsParser;
 import de.canitzp.libloader.threads.*;
-import org.apache.commons.lang3.tuple.Pair;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.MethodNode;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -18,11 +10,7 @@ import javax.swing.text.DefaultEditorKit;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author canitzp

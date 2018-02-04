@@ -6,7 +6,6 @@ import net.minecraft.launchwrapper.Launch;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;

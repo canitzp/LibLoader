@@ -5,26 +5,20 @@ import com.sun.java.swing.plaf.windows.WindowsLookAndFeel;
 import de.canitzp.libloader.remap.mappings.ClientMappings;
 import de.canitzp.libloader.remap.mappings.CommonMappings;
 import de.canitzp.libloader.remap.mappings.MappingsBase;
-import de.canitzp.libloader.threads.DownloadThread;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 /**
  * @author canitzp
  */
 public class LibLoader {
-    public static final String VERSION = "1.2.0";
+    public static final String VERSION = "1.3.0";
     public static final String MEDDLE_VERSION = "1.3";
     public static final String DYNAMICMAPPINGS_VERSION = "028";
     public static final String MEDDLEAPI_VERSION = "1.0.7";

@@ -3,7 +3,10 @@ package de.canitzp.libloader.launch.transformer;
 import de.canitzp.libloader.launch.ITransformer;
 import de.canitzp.libloader.remap.Mappings;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 import java.lang.reflect.InvocationTargetException;
 
